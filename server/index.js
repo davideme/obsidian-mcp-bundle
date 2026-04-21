@@ -12,6 +12,11 @@ const execFileAsync = promisify(execFile);
 import { existsSync } from "fs";
 import { homedir } from "os";
 
+// stderr-only log for pre-connection startup messages (stdio transport: stderr is captured by host)
+function startupLog(level, data) {
+  process.stderr.write(`[obsidian-mcp] ${level} ${typeof data === "string" ? data : JSON.stringify(data)}\n`);
+}
+
 // Try well-known install locations so the binary is found even when
 // /usr/local/bin is absent from the PATH inherited by the MCP process.
 function findObsidianBin() {
@@ -22,24 +27,33 @@ function findObsidianBin() {
     "/Applications/Obsidian.app/Contents/MacOS/obsidian-cli", // macOS app bundle fallback
   ];
   for (const c of candidates) {
-    if (existsSync(c)) return c;
+    const found = existsSync(c);
+    startupLog("debug", { event: "candidate_check", path: c, found });
+    if (found) return c;
   }
+  startupLog("debug", { event: "candidate_check", fallback: "obsidian", reason: "no candidate found" });
   return "obsidian"; // last resort: rely on PATH
 }
 
 const OBSIDIAN_BIN = findObsidianBin();
+startupLog("info", { event: "startup", binary: OBSIDIAN_BIN, platform: process.platform });
 
 async function runObsidian(args) {
+  const start = Date.now();
+  await server.sendLoggingMessage({ level: "debug", data: { event: "exec", binary: OBSIDIAN_BIN, args } });
   try {
     const { stdout } = await execFileAsync(OBSIDIAN_BIN, args, {
       timeout: 30000,
       maxBuffer: 10 * 1024 * 1024,
     });
+    await server.sendLoggingMessage({ level: "debug", data: { event: "exec_ok", args, bytes: stdout.length, ms: Date.now() - start } });
     return stdout.trim();
   } catch (err) {
-    if (err.code === "ENOENT") {
+    await server.sendLoggingMessage({ level: "error", data: { event: "exec_error", args, code: err.code, message: err.message, ms: Date.now() - start } });
+    if (err.code === "ENOENT" || err.message?.includes("ENOENT")) {
       throw new Error(
-        "Obsidian CLI not found. Enable it in Obsidian → Settings → General → Enable CLI, " +
+        `Obsidian CLI not found (tried: ${OBSIDIAN_BIN}). ` +
+        "Enable it in Obsidian → Settings → General → Enable CLI, " +
         "then ensure the binary is on your PATH (macOS: /usr/local/bin/obsidian, Linux: ~/.local/bin/obsidian)."
       );
     }
@@ -786,19 +800,23 @@ function boolFlags(obj, keys) {
 
 const server = new Server(
   { name: "obsidian-cli", version: "0.1.0" },
-  { capabilities: { tools: {} } }
+  { capabilities: { tools: {}, logging: {} } }
 );
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: input } = request.params;
+  const start = Date.now();
+  await server.sendLoggingMessage({ level: "info", data: { event: "tool_call", tool: name } });
   try {
     const output = await handleTool(name, input);
+    await server.sendLoggingMessage({ level: "info", data: { event: "tool_ok", tool: name, ms: Date.now() - start } });
     return {
       content: [{ type: "text", text: output || "(no output)" }],
     };
   } catch (err) {
+    await server.sendLoggingMessage({ level: "error", data: { event: "tool_error", tool: name, message: err.message, ms: Date.now() - start } });
     return {
       content: [{ type: "text", text: `Error: ${err.message}` }],
       isError: true,
@@ -808,3 +826,4 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
+await server.sendLoggingMessage({ level: "info", data: { event: "initialized", binary: OBSIDIAN_BIN, platform: process.platform } });
