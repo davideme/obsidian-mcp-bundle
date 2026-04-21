@@ -1,0 +1,21 @@
+{
+  "manifest_version": "0.2",
+  "name": "obsidian-cli",
+  "version": "0.1.0",
+  "description": "Access all functionality of Obsidian CLI",
+  "author": {
+    "name": "Davide Mendolia"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.js"
+      ],
+      "env": {}
+    }
+  },
+  "license": "MIT"
+}
