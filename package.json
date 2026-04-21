@@ -5,10 +5,16 @@
   "type": "module",
   "main": "server/index.js",
   "scripts": {
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "package": "mcpb pack . dist/",
+    "version": "node scripts/sync-version.js && git add manifest.json",
+    "postversion": "git push && git push --tags"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0"
+  },
+  "devDependencies": {
+    "@anthropic-ai/mcpb": "^2.1.2"
   },
   "engines": {
     "node": ">=18.0.0"
