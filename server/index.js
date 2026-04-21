@@ -67,7 +67,7 @@ function args(command, params = {}, flags = [], vault) {
 const RO  = { readOnlyHint: true,  openWorldHint: true };                          // safe read
 const MUT = { readOnlyHint: false, destructiveHint: false, openWorldHint: true };  // write, non-destructive
 const DEL = { readOnlyHint: false, destructiveHint: true,  openWorldHint: true };  // destructive
-const UNK = { openWorldHint: true };                                                // unknown side-effects
+const UNK = { readOnlyHint: false, destructiveHint: true, openWorldHint: true };    // arbitrary/unknown side-effects
 
 const TOOLS = [
   // ── Files ──
