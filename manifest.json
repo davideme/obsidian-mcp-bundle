@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "obsidian-cli",
   "display_name": "Obsidian CLI",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Control Obsidian from AI tools via the Obsidian CLI — read and write notes, manage tasks, search your vault, and more.",
   "long_description": "Exposes the full Obsidian CLI as MCP tools, letting AI assistants read and write notes, manage tasks, search the vault, work with tags, properties, backlinks, daily notes, and execute any Obsidian command. Requires Obsidian 1.12+ with the CLI enabled in Settings → General.",
   "author": {
@@ -14,10 +14,22 @@
     "url": "https://github.com/davideme/obsidian-mcp-bundle.git"
   },
   "license": "MIT",
-  "privacy_policies": ["https://github.com/davideme/obsidian-mcp-bundle/blob/main/PRIVACY.md"],
-  "keywords": ["obsidian", "notes", "vault", "productivity", "pkm"],
+  "privacy_policies": [
+    "https://github.com/davideme/obsidian-mcp-bundle/blob/main/PRIVACY.md"
+  ],
+  "keywords": [
+    "obsidian",
+    "notes",
+    "vault",
+    "productivity",
+    "pkm"
+  ],
   "compatibility": {
-    "platforms": ["darwin", "win32", "linux"],
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
     "runtimes": {
       "node": ">=18.0.0"
     }
@@ -27,44 +39,151 @@
     "entry_point": "server/index.js",
     "mcp_config": {
       "command": "node",
-      "args": ["${__dirname}/server/index.js"]
+      "args": [
+        "${__dirname}/server/index.js"
+      ]
     }
   },
   "tools": [
-    { "name": "read",             "description": "Read the contents of a note (defaults to active file)" },
-    { "name": "create",           "description": "Create or overwrite a note with optional content or template" },
-    { "name": "append",           "description": "Append content to a note (defaults to active file)" },
-    { "name": "prepend",          "description": "Prepend content after frontmatter (defaults to active file)" },
-    { "name": "move",             "description": "Move or rename a note, updating internal links" },
-    { "name": "rename",           "description": "Rename a note, preserving its extension" },
-    { "name": "delete",           "description": "Delete a note (moves to trash by default)" },
-    { "name": "file_info",        "description": "Get metadata for a file: path, size, created/modified timestamps" },
-    { "name": "files_list",       "description": "List files in the vault, optionally filtered by folder or extension" },
-    { "name": "folders_list",     "description": "List folders in the vault" },
-    { "name": "open",             "description": "Open a file in Obsidian" },
-    { "name": "search",           "description": "Search vault for text; returns matching file paths" },
-    { "name": "search_context",   "description": "Search vault with matching line context (grep-style output)" },
-    { "name": "outline",          "description": "Show headings outline for a file" },
-    { "name": "backlinks",        "description": "List files that link to a note" },
-    { "name": "links",            "description": "List outgoing links from a note" },
-    { "name": "orphans",          "description": "List files with no incoming links" },
-    { "name": "daily_read",       "description": "Read today's daily note" },
-    { "name": "daily_append",     "description": "Append content to today's daily note" },
-    { "name": "daily_prepend",    "description": "Prepend content to today's daily note" },
-    { "name": "tasks_list",       "description": "List tasks in the vault or a specific file" },
-    { "name": "task_update",      "description": "Toggle or set the status of a task by file and line number" },
-    { "name": "tags_list",        "description": "List tags in the vault or a specific file" },
-    { "name": "properties_list",  "description": "List frontmatter properties in the vault or a specific file" },
-    { "name": "property_read",    "description": "Read a specific frontmatter property from a file" },
-    { "name": "property_set",     "description": "Set a frontmatter property on a file" },
-    { "name": "property_remove",  "description": "Remove a frontmatter property from a file" },
-    { "name": "commands_list",    "description": "List available Obsidian command palette commands" },
-    { "name": "command_execute",  "description": "Execute an Obsidian command palette command by ID" },
-    { "name": "vault_info",       "description": "Show vault name, path, file count, and size" },
-    { "name": "vaults_list",      "description": "List all known Obsidian vaults" },
-    { "name": "plugins_list",     "description": "List installed plugins" },
-    { "name": "wordcount",        "description": "Count words and characters in a file" },
-    { "name": "templates_list",   "description": "List available templates" },
-    { "name": "run",              "description": "Run any Obsidian CLI command directly (escape hatch for commands not covered by dedicated tools)" }
+    {
+      "name": "read",
+      "description": "Read the contents of a note (defaults to active file)"
+    },
+    {
+      "name": "create",
+      "description": "Create or overwrite a note with optional content or template"
+    },
+    {
+      "name": "append",
+      "description": "Append content to a note (defaults to active file)"
+    },
+    {
+      "name": "prepend",
+      "description": "Prepend content after frontmatter (defaults to active file)"
+    },
+    {
+      "name": "move",
+      "description": "Move or rename a note, updating internal links"
+    },
+    {
+      "name": "rename",
+      "description": "Rename a note, preserving its extension"
+    },
+    {
+      "name": "delete",
+      "description": "Delete a note (moves to trash by default)"
+    },
+    {
+      "name": "file_info",
+      "description": "Get metadata for a file: path, size, created/modified timestamps"
+    },
+    {
+      "name": "files_list",
+      "description": "List files in the vault, optionally filtered by folder or extension"
+    },
+    {
+      "name": "folders_list",
+      "description": "List folders in the vault"
+    },
+    {
+      "name": "open",
+      "description": "Open a file in Obsidian"
+    },
+    {
+      "name": "search",
+      "description": "Search vault for text; returns matching file paths"
+    },
+    {
+      "name": "search_context",
+      "description": "Search vault with matching line context (grep-style output)"
+    },
+    {
+      "name": "outline",
+      "description": "Show headings outline for a file"
+    },
+    {
+      "name": "backlinks",
+      "description": "List files that link to a note"
+    },
+    {
+      "name": "links",
+      "description": "List outgoing links from a note"
+    },
+    {
+      "name": "orphans",
+      "description": "List files with no incoming links"
+    },
+    {
+      "name": "daily_read",
+      "description": "Read today's daily note"
+    },
+    {
+      "name": "daily_append",
+      "description": "Append content to today's daily note"
+    },
+    {
+      "name": "daily_prepend",
+      "description": "Prepend content to today's daily note"
+    },
+    {
+      "name": "tasks_list",
+      "description": "List tasks in the vault or a specific file"
+    },
+    {
+      "name": "task_update",
+      "description": "Toggle or set the status of a task by file and line number"
+    },
+    {
+      "name": "tags_list",
+      "description": "List tags in the vault or a specific file"
+    },
+    {
+      "name": "properties_list",
+      "description": "List frontmatter properties in the vault or a specific file"
+    },
+    {
+      "name": "property_read",
+      "description": "Read a specific frontmatter property from a file"
+    },
+    {
+      "name": "property_set",
+      "description": "Set a frontmatter property on a file"
+    },
+    {
+      "name": "property_remove",
+      "description": "Remove a frontmatter property from a file"
+    },
+    {
+      "name": "commands_list",
+      "description": "List available Obsidian command palette commands"
+    },
+    {
+      "name": "command_execute",
+      "description": "Execute an Obsidian command palette command by ID"
+    },
+    {
+      "name": "vault_info",
+      "description": "Show vault name, path, file count, and size"
+    },
+    {
+      "name": "vaults_list",
+      "description": "List all known Obsidian vaults"
+    },
+    {
+      "name": "plugins_list",
+      "description": "List installed plugins"
+    },
+    {
+      "name": "wordcount",
+      "description": "Count words and characters in a file"
+    },
+    {
+      "name": "templates_list",
+      "description": "List available templates"
+    },
+    {
+      "name": "run",
+      "description": "Run any Obsidian CLI command directly (escape hatch for commands not covered by dedicated tools)"
+    }
   ]
 }
