@@ -9,9 +9,25 @@ import { execFile } from "child_process";
 import { promisify } from "util";
 
 const execFileAsync = promisify(execFile);
+import { existsSync } from "fs";
+import { homedir } from "os";
 
-// On Windows, obsidian CLI is "obsidian.exe" but Node resolves it via PATH
-const OBSIDIAN_BIN = "obsidian";
+// Try well-known install locations so the binary is found even when
+// /usr/local/bin is absent from the PATH inherited by the MCP process.
+function findObsidianBin() {
+  if (process.platform === "win32") return "obsidian.exe";
+  const candidates = [
+    "/usr/local/bin/obsidian",                                // macOS symlink (default)
+    `${homedir()}/.local/bin/obsidian`,                       // Linux
+    "/Applications/Obsidian.app/Contents/MacOS/obsidian-cli", // macOS app bundle fallback
+  ];
+  for (const c of candidates) {
+    if (existsSync(c)) return c;
+  }
+  return "obsidian"; // last resort: rely on PATH
+}
+
+const OBSIDIAN_BIN = findObsidianBin();
 
 async function runObsidian(args) {
   try {
