@@ -27,7 +27,7 @@ On macOS, Obsidian places the CLI at `/usr/local/bin/obsidian`. On Linux it land
 
 ### From a `.mcpb` file
 
-1. Download the latest `.mcpb` release from the [Releases](https://github.com/davide-mendolia/obsidian-mcp-bundle/releases) page
+1. Download the latest `.mcpb` release from the [Releases](https://github.com/davideme/obsidian-mcp-bundle/releases) page
 2. Double-click the `.mcpb` file — Claude Desktop opens an install prompt
 3. Confirm the installation
 

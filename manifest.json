@@ -6,14 +6,15 @@
   "description": "Control Obsidian from AI tools via the Obsidian CLI — read and write notes, manage tasks, search your vault, and more.",
   "long_description": "Exposes the full Obsidian CLI as MCP tools, letting AI assistants read and write notes, manage tasks, search the vault, work with tags, properties, backlinks, daily notes, and execute any Obsidian command. Requires Obsidian 1.12+ with the CLI enabled in Settings → General.",
   "author": {
-    "name": "Davide Mendolia"
+    "name": "Davide Mendolia",
+    "url": "https://github.com/davideme"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/davide-mendolia/obsidian-mcp-bundle.git"
+    "url": "https://github.com/davideme/obsidian-mcp-bundle.git"
   },
   "license": "MIT",
-  "privacy_policy_url": "https://github.com/davide-mendolia/obsidian-mcp-bundle/blob/main/PRIVACY.md",
+  "privacy_policy_url": "https://github.com/davideme/obsidian-mcp-bundle/blob/main/PRIVACY.md",
   "keywords": ["obsidian", "notes", "vault", "productivity", "pkm"],
   "compatibility": {
     "platforms": ["darwin", "win32", "linux"],

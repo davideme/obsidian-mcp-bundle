@@ -29,4 +29,4 @@ obsidian-mcp-bundle is a **local connector**. It runs entirely on your machine a
 
 ## Contact
 
-For questions or concerns, open an issue at <https://github.com/davide-mendolia/obsidian-mcp-bundle/issues>.
+For questions or concerns, open an issue at <https://github.com/davideme/obsidian-mcp-bundle/issues>.
