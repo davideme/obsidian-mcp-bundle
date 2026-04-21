@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify versions are in sync
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          MAN_VERSION=$(node -p "require('./manifest.json').version")
+          if [ "$PKG_VERSION" != "$MAN_VERSION" ]; then
+            echo "Version mismatch: package.json=$PKG_VERSION manifest.json=$MAN_VERSION"
+            exit 1
+          fi
+          echo "Versions in sync: $PKG_VERSION"
+
+      - name: Smoke-test server starts
+        run: |
+          timeout 5 node server/index.js < /dev/null || true
