@@ -1,4 +1,17 @@
 #!/usr/bin/env node
+
+// Capture crashes before the MCP session is established — errors appear in
+// the host app's stderr log (e.g. ~/Library/Logs/Claude/mcp*.log).
+process.on("uncaughtException", (err) => {
+  process.stderr.write(`[obsidian-mcp] CRASH uncaughtException: ${err.stack || err.message}\n`);
+  process.exit(1);
+});
+process.on("unhandledRejection", (reason) => {
+  const msg = reason instanceof Error ? (reason.stack || reason.message) : String(reason);
+  process.stderr.write(`[obsidian-mcp] CRASH unhandledRejection: ${msg}\n`);
+  process.exit(1);
+});
+
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {

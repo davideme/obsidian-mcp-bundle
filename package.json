@@ -11,7 +11,7 @@
     "postversion": "git push && git push --tags"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.0"
+    "@modelcontextprotocol/sdk": "^1.29.0"
   },
   "devDependencies": {
     "@anthropic-ai/mcpb": "^2.1.2"
