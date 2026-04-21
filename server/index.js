@@ -17,6 +17,16 @@ function startupLog(level, data) {
   process.stderr.write(`[obsidian-mcp] ${level} ${typeof data === "string" ? data : JSON.stringify(data)}\n`);
 }
 
+// Send an MCP logging notification; silently falls back to stderr if the
+// session is not yet initialized or the send fails for any reason.
+async function log(level, data) {
+  try {
+    await server.sendLoggingMessage({ level, data });
+  } catch {
+    process.stderr.write(`[obsidian-mcp] ${level} ${typeof data === "string" ? data : JSON.stringify(data)}\n`);
+  }
+}
+
 // Try well-known install locations so the binary is found even when
 // /usr/local/bin is absent from the PATH inherited by the MCP process.
 function findObsidianBin() {
@@ -40,16 +50,16 @@ startupLog("info", { event: "startup", binary: OBSIDIAN_BIN, platform: process.p
 
 async function runObsidian(args) {
   const start = Date.now();
-  await server.sendLoggingMessage({ level: "debug", data: { event: "exec", binary: OBSIDIAN_BIN, args } });
+  await log("debug", { event: "exec", binary: OBSIDIAN_BIN, args });
   try {
     const { stdout } = await execFileAsync(OBSIDIAN_BIN, args, {
       timeout: 30000,
       maxBuffer: 10 * 1024 * 1024,
     });
-    await server.sendLoggingMessage({ level: "debug", data: { event: "exec_ok", args, bytes: stdout.length, ms: Date.now() - start } });
+    await log("debug", { event: "exec_ok", args, bytes: stdout.length, ms: Date.now() - start });
     return stdout.trim();
   } catch (err) {
-    await server.sendLoggingMessage({ level: "error", data: { event: "exec_error", args, code: err.code, message: err.message, ms: Date.now() - start } });
+    await log("error", { event: "exec_error", args, code: err.code, message: err.message, ms: Date.now() - start });
     if (err.code === "ENOENT" || err.message?.includes("ENOENT")) {
       throw new Error(
         `Obsidian CLI not found (tried: ${OBSIDIAN_BIN}). ` +
@@ -808,15 +818,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }))
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: input } = request.params;
   const start = Date.now();
-  await server.sendLoggingMessage({ level: "info", data: { event: "tool_call", tool: name } });
+  await log("info", { event: "tool_call", tool: name });
   try {
     const output = await handleTool(name, input);
-    await server.sendLoggingMessage({ level: "info", data: { event: "tool_ok", tool: name, ms: Date.now() - start } });
+    await log("info", { event: "tool_ok", tool: name, ms: Date.now() - start });
     return {
       content: [{ type: "text", text: output || "(no output)" }],
     };
   } catch (err) {
-    await server.sendLoggingMessage({ level: "error", data: { event: "tool_error", tool: name, message: err.message, ms: Date.now() - start } });
+    await log("error", { event: "tool_error", tool: name, message: err.message, ms: Date.now() - start });
     return {
       content: [{ type: "text", text: `Error: ${err.message}` }],
       isError: true,
@@ -826,4 +836,3 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
-await server.sendLoggingMessage({ level: "info", data: { event: "initialized", binary: OBSIDIAN_BIN, platform: process.platform } });
