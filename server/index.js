@@ -47,11 +47,18 @@ function args(command, params = {}, flags = [], vault) {
 
 // ─── Tool definitions ────────────────────────────────────────────────────────
 
+// Annotation shorthands
+const RO  = { readOnlyHint: true,  openWorldHint: true };                          // safe read
+const MUT = { readOnlyHint: false, destructiveHint: false, openWorldHint: true };  // write, non-destructive
+const DEL = { readOnlyHint: false, destructiveHint: true,  openWorldHint: true };  // destructive
+const UNK = { openWorldHint: true };                                                // unknown side-effects
+
 const TOOLS = [
   // ── Files ──
   {
     name: "read",
     description: "Read the contents of a note (defaults to active file).",
+    annotations: { title: "Read Note", ...RO },
     inputSchema: {
       type: "object",
       properties: {
@@ -64,6 +71,7 @@ const TOOLS = [
   {
     name: "create",
     description: "Create or overwrite a note.",
+    annotations: { title: "Create Note", ...MUT },
     inputSchema: {
       type: "object",
       properties: {
@@ -80,6 +88,7 @@ const TOOLS = [
   {
     name: "append",
     description: "Append content to a note (defaults to active file).",
+    annotations: { title: "Append to Note", ...MUT },
     inputSchema: {
       type: "object",
       required: ["content"],
@@ -95,6 +104,7 @@ const TOOLS = [
   {
     name: "prepend",
     description: "Prepend content after frontmatter (defaults to active file).",
+    annotations: { title: "Prepend to Note", ...MUT },
     inputSchema: {
       type: "object",
       required: ["content"],
@@ -110,6 +120,7 @@ const TOOLS = [
   {
     name: "move",
     description: "Move or rename a note, updating internal links automatically.",
+    annotations: { title: "Move Note", ...DEL },
     inputSchema: {
       type: "object",
       required: ["to"],
@@ -124,6 +135,7 @@ const TOOLS = [
   {
     name: "rename",
     description: "Rename a note in place (extension preserved if omitted).",
+    annotations: { title: "Rename Note", ...DEL },
     inputSchema: {
       type: "object",
       required: ["name"],
@@ -138,6 +150,7 @@ const TOOLS = [
   {
     name: "delete",
     description: "Delete a note (moves to trash by default).",
+    annotations: { title: "Delete Note", ...DEL, idempotentHint: true },
     inputSchema: {
       type: "object",
       properties: {
@@ -151,6 +164,7 @@ const TOOLS = [
   {
     name: "file_info",
     description: "Get metadata for a file: path, size, created/modified timestamps.",
+    annotations: { title: "File Info", ...RO },
     inputSchema: {
       type: "object",
       properties: {
@@ -163,6 +177,7 @@ const TOOLS = [
   {
     name: "files_list",
     description: "List files in the vault, optionally filtered by folder or extension.",
+    annotations: { title: "List Files", ...RO },
     inputSchema: {
       type: "object",
       properties: {
@@ -176,6 +191,7 @@ const TOOLS = [
   {
     name: "folders_list",
     description: "List folders in the vault.",
+    annotations: { title: "List Folders", ...RO },
     inputSchema: {
       type: "object",
       properties: {
@@ -188,6 +204,7 @@ const TOOLS = [
   {
     name: "open",
     description: "Open a file in Obsidian.",
+    annotations: { title: "Open File", ...MUT },
     inputSchema: {
       type: "object",
       properties: {
@@ -202,6 +219,7 @@ const TOOLS = [
   {
     name: "search",
     description: "Search the vault for text; returns matching file paths.",
+    annotations: { title: "Search Vault", ...RO },
     inputSchema: {
       type: "object",
       required: ["query"],
@@ -219,6 +237,7 @@ const TOOLS = [
   {
     name: "search_context",
     description: "Search vault with matching line context (grep-style path:line:text output).",
+    annotations: { title: "Search with Context", ...RO },
     inputSchema: {
       type: "object",
       required: ["query"],
@@ -236,6 +255,7 @@ const TOOLS = [
   {
     name: "outline",
     description: "Show heading outline for a file.",
+    annotations: { title: "File Outline", ...RO },
     inputSchema: {
       type: "object",
       properties: {
@@ -250,6 +270,7 @@ const TOOLS = [
   {
     name: "backlinks",
     description: "List files that link to a note (defaults to active file).",
+    annotations: { title: "Backlinks", ...RO },
     inputSchema: {
       type: "object",
       properties: {
@@ -265,6 +286,7 @@ const TOOLS = [
   {
     name: "links",
     description: "List outgoing links from a note (defaults to active file).",
+    annotations: { title: "Outgoing Links", ...RO },
     inputSchema: {
       type: "object",
       properties: {
@@ -278,6 +300,7 @@ const TOOLS = [
   {
     name: "orphans",
     description: "List files with no incoming links.",
+    annotations: { title: "Orphan Notes", ...RO },
     inputSchema: {
       type: "object",
       properties: {
@@ -290,6 +313,7 @@ const TOOLS = [
   {
     name: "daily_read",
     description: "Read today's daily note.",
+    annotations: { title: "Read Daily Note", ...RO },
     inputSchema: {
       type: "object",
       properties: {
@@ -300,6 +324,7 @@ const TOOLS = [
   {
     name: "daily_append",
     description: "Append content to today's daily note.",
+    annotations: { title: "Append to Daily Note", ...MUT },
     inputSchema: {
       type: "object",
       required: ["content"],
@@ -314,6 +339,7 @@ const TOOLS = [
   {
     name: "daily_prepend",
     description: "Prepend content to today's daily note.",
+    annotations: { title: "Prepend to Daily Note", ...MUT },
     inputSchema: {
       type: "object",
       required: ["content"],
@@ -329,6 +355,7 @@ const TOOLS = [
   {
     name: "tasks_list",
     description: "List tasks in the vault or a specific file.",
+    annotations: { title: "List Tasks", ...RO },
     inputSchema: {
       type: "object",
       properties: {
@@ -348,6 +375,7 @@ const TOOLS = [
   {
     name: "task_update",
     description: "Toggle or set the status of a task by file and line number.",
+    annotations: { title: "Update Task", ...MUT, idempotentHint: true },
     inputSchema: {
       type: "object",
       properties: {
@@ -368,6 +396,7 @@ const TOOLS = [
   {
     name: "tags_list",
     description: "List tags in the vault or a specific file.",
+    annotations: { title: "List Tags", ...RO },
     inputSchema: {
       type: "object",
       properties: {
@@ -385,6 +414,7 @@ const TOOLS = [
   {
     name: "properties_list",
     description: "List frontmatter properties in the vault or a specific file.",
+    annotations: { title: "List Properties", ...RO },
     inputSchema: {
       type: "object",
       properties: {
@@ -401,6 +431,7 @@ const TOOLS = [
   {
     name: "property_read",
     description: "Read a specific frontmatter property from a file.",
+    annotations: { title: "Read Property", ...RO },
     inputSchema: {
       type: "object",
       required: ["name"],
@@ -415,6 +446,7 @@ const TOOLS = [
   {
     name: "property_set",
     description: "Set a frontmatter property on a file.",
+    annotations: { title: "Set Property", ...MUT, idempotentHint: true },
     inputSchema: {
       type: "object",
       required: ["name", "value"],
@@ -431,6 +463,7 @@ const TOOLS = [
   {
     name: "property_remove",
     description: "Remove a frontmatter property from a file.",
+    annotations: { title: "Remove Property", ...DEL, idempotentHint: true },
     inputSchema: {
       type: "object",
       required: ["name"],
@@ -446,6 +479,7 @@ const TOOLS = [
   {
     name: "commands_list",
     description: "List available Obsidian command palette commands.",
+    annotations: { title: "List Commands", ...RO },
     inputSchema: {
       type: "object",
       properties: {
@@ -457,6 +491,7 @@ const TOOLS = [
   {
     name: "command_execute",
     description: "Execute an Obsidian command palette command by ID.",
+    annotations: { title: "Execute Command", ...UNK },
     inputSchema: {
       type: "object",
       required: ["id"],
@@ -470,6 +505,7 @@ const TOOLS = [
   {
     name: "vault_info",
     description: "Show vault name, path, file count, and size.",
+    annotations: { title: "Vault Info", ...RO },
     inputSchema: {
       type: "object",
       properties: {
@@ -481,6 +517,7 @@ const TOOLS = [
   {
     name: "vaults_list",
     description: "List all known Obsidian vaults.",
+    annotations: { title: "List Vaults", ...RO },
     inputSchema: {
       type: "object",
       properties: {
@@ -492,6 +529,7 @@ const TOOLS = [
   {
     name: "plugins_list",
     description: "List installed plugins.",
+    annotations: { title: "List Plugins", ...RO },
     inputSchema: {
       type: "object",
       properties: {
@@ -506,6 +544,7 @@ const TOOLS = [
   {
     name: "wordcount",
     description: "Count words and characters in a file (defaults to active file).",
+    annotations: { title: "Word Count", ...RO },
     inputSchema: {
       type: "object",
       properties: {
@@ -520,6 +559,7 @@ const TOOLS = [
   {
     name: "templates_list",
     description: "List available templates.",
+    annotations: { title: "List Templates", ...RO },
     inputSchema: {
       type: "object",
       properties: {
@@ -532,6 +572,7 @@ const TOOLS = [
   {
     name: "run",
     description: "Run any Obsidian CLI command directly. Use for commands not covered by dedicated tools (e.g. eval, devtools, diff, sync, publish).",
+    annotations: { title: "Run CLI Command", ...UNK },
     inputSchema: {
       type: "object",
       required: ["command"],
