@@ -6,7 +6,7 @@
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
-    "package": "mcpb pack . dist/",
+    "package": "mcpb pack . && mkdir -p dist && mv *.mcpb dist/",
     "version": "node scripts/sync-version.js && git add manifest.json",
     "postversion": "git push && git push --tags"
   },
