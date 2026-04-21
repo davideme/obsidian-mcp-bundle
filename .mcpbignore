@@ -3,8 +3,8 @@
 scripts/
 .gitignore
 
-# Build output
-dist/
+# Build output (root-level only — node_modules/*/dist/ must be preserved)
+/dist/
 
 # Lock files (dependencies must be bundled in node_modules)
 package-lock.json
