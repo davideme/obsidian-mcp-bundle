@@ -1,0 +1,40 @@
+# Development & CI
+.github/
+scripts/
+.gitignore
+
+# Build output
+dist/
+
+# Lock files (dependencies must be bundled in node_modules)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Logs & diagnostics
+logs/
+*.log
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Runtime data
+*.pid
+*.pid.lock
+
+# Coverage & test output
+coverage/
+*.lcov
+.nyc_output/
+
+# Caches
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+.npm/
+
+# Environment files
+.env
+.env.*
+
+# TypeScript build info
+*.tsbuildinfo
