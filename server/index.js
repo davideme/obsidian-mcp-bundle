@@ -37,6 +37,15 @@ async function runObsidian(args) {
     });
     return stdout.trim();
   } catch (err) {
+    if (err.code === "ENOENT") {
+      throw new Error(
+        "Obsidian CLI not found. Enable it in Obsidian → Settings → General → Enable CLI, " +
+        "then ensure the binary is on your PATH (macOS: /usr/local/bin/obsidian, Linux: ~/.local/bin/obsidian)."
+      );
+    }
+    if (err.code === "ETIMEDOUT") {
+      throw new Error("Obsidian CLI timed out. Make sure Obsidian is running and the vault is open.");
+    }
     // Some CLI commands exit non-zero but still write useful stdout
     const out = err.stdout?.trim();
     if (out) return out;
@@ -192,7 +201,7 @@ const TOOLS = [
   },
   {
     name: "files_list",
-    description: "List files in the vault, optionally filtered by folder or extension.",
+    description: "List files in the vault, optionally filtered by folder or extension. Use the folder or ext parameters to narrow results; use total:true to get a count without listing every file.",
     annotations: { title: "List Files", ...RO },
     inputSchema: {
       type: "object",
@@ -252,7 +261,7 @@ const TOOLS = [
   },
   {
     name: "search_context",
-    description: "Search vault with matching line context (grep-style path:line:text output).",
+    description: "Search vault with matching line context (grep-style path:line:text output). Prefer setting a limit to avoid large responses on big vaults.",
     annotations: { title: "Search with Context", ...RO },
     inputSchema: {
       type: "object",
@@ -370,7 +379,7 @@ const TOOLS = [
   // ── Tasks ──
   {
     name: "tasks_list",
-    description: "List tasks in the vault or a specific file.",
+    description: "List tasks in the vault or a specific file. Scope to a file or use total:true to get a count when the full list is not needed.",
     annotations: { title: "List Tasks", ...RO },
     inputSchema: {
       type: "object",

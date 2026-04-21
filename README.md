@@ -129,6 +129,26 @@ Once installed, Claude can access your Obsidian vault directly. All tools accept
 
 > `command_execute` and `run` carry `destructiveHint: true` because their side effects depend on which command is invoked.
 
+## Troubleshooting
+
+**"Obsidian CLI not found"**
+The CLI binary isn't on the expected path. Check that:
+1. Obsidian is open and the CLI is enabled: **Settings → General → Enable CLI**
+2. The binary exists at `/usr/local/bin/obsidian` (macOS) or `~/.local/bin/obsidian` (Linux)
+3. Run `obsidian --version` in a terminal to confirm it's reachable
+
+**"Obsidian CLI timed out"**
+The CLI requires Obsidian to be running. Make sure the Obsidian desktop app is open and a vault is loaded.
+
+**"No such vault" / wrong vault targeted**
+Pass the `vault` parameter explicitly with the vault name as shown in Obsidian's vault switcher, or open the correct vault in Obsidian before calling tools without a `vault` parameter.
+
+**Tools return empty output**
+Some tools (e.g. `daily_read`, `tasks_list`) return empty output when no matching content exists — this is expected, not an error.
+
+**Extension not appearing in Claude Desktop**
+Re-install the `.mcpb` file: drag it onto the Claude Desktop window or use **Settings → Extensions → Install from file**.
+
 ## Authentication
 
 This extension is **local-only** — no API keys, tokens, or OAuth flows are needed. It delegates entirely to the Obsidian CLI, which runs under your local user account.
