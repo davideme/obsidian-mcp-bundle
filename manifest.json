@@ -14,7 +14,7 @@
     "url": "https://github.com/davideme/obsidian-mcp-bundle.git"
   },
   "license": "MIT",
-  "privacy_policy_url": "https://github.com/davideme/obsidian-mcp-bundle/blob/main/PRIVACY.md",
+  "privacy_policies": ["https://github.com/davideme/obsidian-mcp-bundle/blob/main/PRIVACY.md"],
   "keywords": ["obsidian", "notes", "vault", "productivity", "pkm"],
   "compatibility": {
     "platforms": ["darwin", "win32", "linux"],
