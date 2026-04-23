@@ -1,4 +1,17 @@
 #!/usr/bin/env node
+
+// Capture crashes before the MCP session is established — errors appear in
+// the host app's stderr log (e.g. ~/Library/Logs/Claude/mcp*.log).
+process.on("uncaughtException", (err) => {
+  process.stderr.write(`[obsidian-mcp] CRASH uncaughtException: ${err.stack || err.message}\n`);
+  process.exit(1);
+});
+process.on("unhandledRejection", (reason) => {
+  const msg = reason instanceof Error ? (reason.stack || reason.message) : String(reason);
+  process.stderr.write(`[obsidian-mcp] CRASH unhandledRejection: ${msg}\n`);
+  process.exit(1);
+});
+
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -12,6 +25,21 @@ const execFileAsync = promisify(execFile);
 import { existsSync } from "fs";
 import { homedir } from "os";
 
+// stderr-only log for pre-connection startup messages (stdio transport: stderr is captured by host)
+function startupLog(level, data) {
+  process.stderr.write(`[obsidian-mcp] ${level} ${typeof data === "string" ? data : JSON.stringify(data)}\n`);
+}
+
+// Send an MCP logging notification; silently falls back to stderr if the
+// session is not yet initialized or the send fails for any reason.
+async function log(level, data) {
+  try {
+    await server.sendLoggingMessage({ level, data });
+  } catch {
+    process.stderr.write(`[obsidian-mcp] ${level} ${typeof data === "string" ? data : JSON.stringify(data)}\n`);
+  }
+}
+
 // Try well-known install locations so the binary is found even when
 // /usr/local/bin is absent from the PATH inherited by the MCP process.
 function findObsidianBin() {
@@ -22,24 +50,33 @@ function findObsidianBin() {
     "/Applications/Obsidian.app/Contents/MacOS/obsidian-cli", // macOS app bundle fallback
   ];
   for (const c of candidates) {
-    if (existsSync(c)) return c;
+    const found = existsSync(c);
+    startupLog("debug", { event: "candidate_check", path: c, found });
+    if (found) return c;
   }
+  startupLog("debug", { event: "candidate_check", fallback: "obsidian", reason: "no candidate found" });
   return "obsidian"; // last resort: rely on PATH
 }
 
 const OBSIDIAN_BIN = findObsidianBin();
+startupLog("info", { event: "startup", binary: OBSIDIAN_BIN, platform: process.platform });
 
 async function runObsidian(args) {
+  const start = Date.now();
+  await log("debug", { event: "exec", binary: OBSIDIAN_BIN, args });
   try {
     const { stdout } = await execFileAsync(OBSIDIAN_BIN, args, {
       timeout: 30000,
       maxBuffer: 10 * 1024 * 1024,
     });
+    await log("debug", { event: "exec_ok", args, bytes: stdout.length, ms: Date.now() - start });
     return stdout.trim();
   } catch (err) {
-    if (err.code === "ENOENT") {
+    await log("error", { event: "exec_error", args, code: err.code, message: err.message, ms: Date.now() - start });
+    if (err.code === "ENOENT" || err.message?.includes("ENOENT")) {
       throw new Error(
-        "Obsidian CLI not found. Enable it in Obsidian → Settings → General → Enable CLI, " +
+        `Obsidian CLI not found (tried: ${OBSIDIAN_BIN}). ` +
+        "Enable it in Obsidian → Settings → General → Enable CLI, " +
         "then ensure the binary is on your PATH (macOS: /usr/local/bin/obsidian, Linux: ~/.local/bin/obsidian)."
       );
     }
@@ -786,19 +823,23 @@ function boolFlags(obj, keys) {
 
 const server = new Server(
   { name: "obsidian-cli", version: "0.1.0" },
-  { capabilities: { tools: {} } }
+  { capabilities: { tools: {}, logging: {} } }
 );
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: input } = request.params;
+  const start = Date.now();
+  await log("info", { event: "tool_call", tool: name });
   try {
     const output = await handleTool(name, input);
+    await log("info", { event: "tool_ok", tool: name, ms: Date.now() - start });
     return {
       content: [{ type: "text", text: output || "(no output)" }],
     };
   } catch (err) {
+    await log("error", { event: "tool_error", tool: name, message: err.message, ms: Date.now() - start });
     return {
       content: [{ type: "text", text: `Error: ${err.message}` }],
       isError: true,
