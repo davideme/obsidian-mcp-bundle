@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "obsidian-cli",
   "display_name": "Obsidian CLI",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Control Obsidian from AI tools via the Obsidian CLI — read and write notes, manage tasks, search your vault, and more.",
   "long_description": "Exposes the full Obsidian CLI as MCP tools, letting AI assistants read and write notes, manage tasks, search the vault, work with tags, properties, backlinks, daily notes, and execute any Obsidian command. Requires Obsidian 1.12+ with the CLI enabled in Settings → General.",
   "author": {
